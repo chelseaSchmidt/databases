@@ -22,9 +22,12 @@ var App = {
 
   fetch: function(callback = ()=>{}) {
     LocalHost.readAll((data) => {
-
+      console.log('data received by client from server: ', data);
       // Don't bother to update if we have no messages
-      if (!data.results || !data.results.length) { return; }
+      if (!data.results || !data.results.length) {
+        callback();
+        return;
+      }
 
       Rooms.update(data.results, RoomsView.render);
       Messages.update(data.results, MessagesView.render);

@@ -14,7 +14,7 @@ var LocalHost = {
         console.error('chatterbox: Failed to create message', error);
       }
     });
-      },
+  },
 
   readAll: function(successCB, errorCB = null) {
     $.ajax({
