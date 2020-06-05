@@ -19,13 +19,19 @@ module.exports = {
     let username = req.body.username;
     let text = req.body.text;
     let roomname = req.body.roomname;
-    let apostrophe = /\'/g;
-    for (let i = 0; i < text.length; i++) {
-      if (text.indexOf(`'`) > -1) {
-        text = text.replace(apostrophe, `''`);
-      }
+
+    //Escape single quotes===========================
+    let apostrophe = /'/g;
+    if (text.indexOf(`'`) > -1) {
+      text = text.replace(apostrophe, `''`);
     }
-    console.log(text);
+    if (roomname.indexOf(`'`) > -1) {
+      roomname = roomname.replace(apostrophe, `''`);
+    }
+    if (username.indexOf(`'`) > -1) {
+      username = username.replace(apostrophe, `''`);
+    }
+    //===============================================
 
     db.mysql.query(`SELECT * FROM users WHERE username='${username}'`, (err, results) => {
       //If error
