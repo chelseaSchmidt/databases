@@ -8,8 +8,10 @@ module.exports = {
         callback(err, null);
       } else {
         console.log('mysql success');
-        console.log('data received from mysql getAll: ', results);
-        callback(null, results);
+        let data = {};
+        data.results = results;
+        console.log('data received from mysql getAll: ', data.results);
+        callback(null, data);
       }
     });
   }, // a function which produces all the messages

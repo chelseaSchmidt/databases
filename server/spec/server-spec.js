@@ -16,11 +16,26 @@ describe('Persistent Node Chat Server', function() {
     });
     dbConnection.connect();
 
-       var tablename = "users"; // TODO: fill this out
+       var tablename = "messages"; // TODO: fill this out
+       var tablename2 = "users";
 
     /* Empty the db table before each test so that multiple tests
      * (or repeated runs of the tests) won't screw each other up: */
-    dbConnection.query('truncate ' + tablename, done);
+    // dbConnection.query('truncate ' + tablename,
+    // 'SET FOREIGN_KEY_CHECKS = 0',
+    // 'truncate ' + tablename2,
+    // 'SET FOREIGN_KEY_CHECKS = 1', done
+    // );
+    dbConnection.query('truncate' + tablename, () => {
+      dbConnection.query('SET FOREIGN_KEY_CHECKS = 0', () => {
+        dbConnection.query('truncate ' + tablename2, () => {
+          dbConnection.query('SET FOREIGN_KEY_CHECKS = 1', done);
+        });
+      });
+    });
+    // dbConnection.query('SET FOREIGN_KEY_CHECKS = 0');
+    // dbConnection.query('truncate ' + tablename2);
+    // dbConnection.query('SET FOREIGN_KEY_CHECKS = 1', done);
   });
 
   afterEach(function() {
@@ -69,14 +84,19 @@ describe('Persistent Node Chat Server', function() {
     var queryString = "INSERT INTO users (username) VALUES('JOSH')";
     dbConnection.query(queryString, function(err, results) {
       if (err) {throw err; }
-      request('http://127.0.0.1:3000/classes/messages', function(error, response, body) {
+      request('http://127.0.0.1:3000/classes/users', function(error, response, body) {
         var userList = JSON.parse(body);
         expect(userList[0]).to.equal('JOSH');
       });
     });
     // Let's insert a message into the db
-       var queryString2 = `INSERT INTO messages(username, text, createdAt, roomname, updatedAt) VALUES('JOSH', 'Men like you can never change!', ${new Date()}, 'main', ${new Date()})`;
+       var queryString2 = `INSERT INTO messages(username, text, createdAt, roomname, updatedAt) VALUES('JOSH', 'Men like you can never change!', (SELECT CURDATE()), 'main', (SELECT CURDATE()))`;
        var queryArgs = [];
+
+    // INSERT INTO messages(username, text, createdAt, roomname, updatedAt) VALUES('JOSH', 'Men like you can never change!', (SELECT CURDATE()), 'main', (SELECT CURDATE()));
+
+
+
     // TODO - The exact query string and query args to use
     // here depend on the schema you design, so I'll leave
     // them up to you. */
