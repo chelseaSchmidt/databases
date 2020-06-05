@@ -5,15 +5,22 @@ var MessagesView = {
   initialize: function() {
 
     MessagesView.$chats.on('click', '.username', MessagesView.handleClick);
-      },
+
+  },
 
   render: function() {
 
     MessagesView.$chats.html('');
-    Messages
-      .items()
-      .filter(message => Rooms.isSelected(message.roomname))
-      .each(message => MessagesView.renderMessage(message));
+    if (Rooms.isSelected()) {
+      Messages
+        .items()
+        .each(message => MessagesView.renderMessage(message));
+    } else {
+      Messages
+        .items()
+        .filter(message => Rooms.isSelected(message.roomname))
+        .each(message => MessagesView.renderMessage(message));
+    }
   },
 
   renderMessage: function(message) {
@@ -27,6 +34,6 @@ var MessagesView = {
     if (username === undefined) { return; }
 
     Friends.toggleStatus(username, MessagesView.render);
-      }
+  }
 
 };

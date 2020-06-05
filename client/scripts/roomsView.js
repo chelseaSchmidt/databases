@@ -7,11 +7,12 @@ var RoomsView = {
 
     RoomsView.$select.on('change', RoomsView.handleChange);
     RoomsView.$button.on('click', RoomsView.handleClick);
-      },
+  },
 
   render: function() {
 
     RoomsView.$select.html('');
+    RoomsView.$select.html('<option>lobby - all rooms!</option>');
     Rooms
       .items()
       .each(RoomsView.renderRoom);
@@ -36,6 +37,6 @@ var RoomsView = {
         MessagesView.render();
       });
     }
-      }
+  }
 
 };
