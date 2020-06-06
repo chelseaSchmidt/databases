@@ -1,17 +1,65 @@
 var db = require('../db');
 const users = require('./users.js');
+const Sequelize = require('sequelize');
+const dbSequelize = new Sequelize('chat', 'student', 'student', {
+  host: 'localhost',
+  dialect: 'mysql'
+});
+
+dbSequelize
+  .authenticate()
+  .then(() => {
+    console.log('sequelize connected');
+  })
+  .catch(err => {
+    console.log('sequelize did not connect: ', err);
+  });
+
+const Message = dbSequelize.define('message', {
+  objectId: {
+    type: Sequelize.INTEGER,
+    allowNull: false,
+    primaryKey: true
+  },
+  username: {
+    type: Sequelize.STRING,
+    allowNull: false
+  },
+  text: {
+    type: Sequelize.STRING,
+    allowNull: false
+  },
+  roomname: {
+    type: Sequelize.STRING,
+    allowNull: false
+  }
+});
 
 module.exports = {
   getAll: function (callback) {
-    db.mysql.query('SELECT * FROM messages', (err, results) => {
-      if (err) {
-        callback(err, null);
-      } else {
+    Message.sync()
+      .then(() => {
+        return Message.findAll();
+      })
+      .then(results => {
         let data = {};
         data.results = results;
         callback(null, data);
-      }
-    });
+      })
+      .catch(err => {
+        console.error(err);
+        callback(err, null);
+      });
+
+    // db.mysql.query('SELECT * FROM messages', (err, results) => {
+    //   if (err) {
+    //     callback(err, null);
+    //   } else {
+    //     let data = {};
+    //     data.results = results;
+    //     callback(null, data);
+    //   }
+    // });
   },
 
   create: function (req, callback) {
@@ -20,7 +68,7 @@ module.exports = {
     let text = req.body.text;
     let roomname = req.body.roomname;
 
-    let sql =`SELECT * FROM users WHERE username=?`;
+    let sql = 'SELECT * FROM users WHERE username=?';
     let queryArgs = [username];
     db.mysql.query(sql, queryArgs, (err, results) => {
       //If error
@@ -37,7 +85,7 @@ module.exports = {
 
           } else {
 
-            let sql2 = `INSERT INTO messages(username, text, createdAt, roomname, updatedAt) VALUES(?, ?, (SELECT CURDATE()), ?, (SELECT CURDATE()))`;
+            let sql2 = 'INSERT INTO messages(username, text, createdAt, roomname, updatedAt) VALUES(?, ?, (SELECT CURDATE()), ?, (SELECT CURDATE()))';
             let queryArgs2 = [username, text, roomname];
 
             db.mysql.query(sql2, queryArgs2, (err, results) => {
@@ -53,7 +101,7 @@ module.exports = {
 
       //If user already exists
       } else {
-        let sql2 = `INSERT INTO messages(username, text, createdAt, roomname, updatedAt) VALUES(?, ?, (SELECT CURDATE()), ?, (SELECT CURDATE()))`;
+        let sql2 = 'INSERT INTO messages(username, text, createdAt, roomname, updatedAt) VALUES(?, ?, (SELECT CURDATE()), ?, (SELECT CURDATE()))';
 
         let queryArgs2 = [username, text, roomname];
 

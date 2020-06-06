@@ -4,9 +4,10 @@
  */
 
 var Sequelize = require('sequelize');
-var db = new Sequelize('chat', 'root', '');
-/* TODO this constructor takes the database name, username, then password.
- * Modify the arguments if you need to */
+var db = new Sequelize('chat', 'student', 'student', {
+  host: 'localhost',
+  dialect: 'mysql'
+});
 
 /* first define the data structure by giving property names and datatypes
  * See http://sequelizejs.com for other datatypes you can use besides STRING. */
