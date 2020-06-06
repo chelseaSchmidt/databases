@@ -18,11 +18,10 @@ var App = {
 
     // Poll for new messages every 3 sec
     setInterval(App.fetch, 3000);
-      },
+  },
 
   fetch: function(callback = ()=>{}) {
     LocalHost.readAll((data) => {
-      console.log('data received by client from server: ', data);
       // Don't bother to update if we have no messages
       if (!data.results || !data.results.length) {
         callback();
