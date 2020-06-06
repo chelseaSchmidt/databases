@@ -4,6 +4,9 @@
 var mysql = require('mysql');
 var request = require('request');
 var expect = require('chai').expect;
+const axios = require('axios').create({
+  baseURL: 'http://127.0.0.1:3000/'
+});
 
 describe('Persistent Node Chat Server', function() {
   var dbConnection;
@@ -22,9 +25,9 @@ describe('Persistent Node Chat Server', function() {
     /* Empty the db table before each test so that multiple tests
      * (or repeated runs of the tests) won't screw each other up: */
     dbConnection.query(`DELETE FROM ${tablename}`, (err) => {
-      if (err) {return done(err)}
+      if (err) { return done(err); }
       dbConnection.query(`DELETE FROM ${tablename2}`, (err) => {
-        if (err) {return done(err)}
+        if (err) { return done(err); }
         done();
       });
     });
@@ -75,7 +78,6 @@ describe('Persistent Node Chat Server', function() {
     dbConnection.query(queryString, function(err, results) {
       if (err) { throw err; }
       request('http://127.0.0.1:3000/classes/users', function(error, response, body) {
-        console.log(body);
         var userList = JSON.parse(body);
 
 
@@ -98,12 +100,57 @@ describe('Persistent Node Chat Server', function() {
     });
   });
 
-  // it('should create a new user for first-time messages', function(done) {
-  //   request.post()
-  // });
+  it('should create a new user for first-time messages', function(done) {
+    axios.post('/classes/messages', {
+      username: 'SeveralChelseasLater',
+      text: 'A very exciting test message',
+      roomname: 'curfew-quarantine-life-huzzah'
+    })
+      .then(res => {
+        const sql = `SELECT username FROM users WHERE username='SeveralChelseasLater'`;
+        dbConnection.query(sql, (err, results) => {
+          if (err) { return done(err); }
+          expect(results.length).to.equal(1);
+          expect(results[0].username).to.equal('SeveralChelseasLater');
+          done();
+        });
+      })
+      .catch(err => {
+        done(err);
+      });
+  });
 
-  // it('should protect against SQL injection attacks', function(done) {
+  it('should protect against SQL injection attacks', function(done) {
+    const sql = `INSERT INTO users (username) VALUES('Mr. Spec')`;
+    const sql2 = `INSERT INTO messages(username, text, createdAt, roomname, updatedAt) VALUES('Mr. Spec', 'injection tests', (SELECT CURDATE()), 'newRoom', (SELECT CURDATE()))`;
 
-  // });
+    const getMessages = `SELECT * FROM messages`;
+
+    const message = `DELETE FROM messages`;
+
+    dbConnection.query(sql, (err, res) => {
+      if (err) { return done(err); }
+      dbConnection.query(sql2, (err, res) => {
+        if (err) { return done(err); }
+        axios.post('/classes/messages', {
+          username: message,
+          text: `hopefully this isn't the only message in the table...`,
+          roomname: 'a room'
+        })
+          .then(res => {
+            dbConnection.query(getMessages, (err, res) => {
+              if (err) { return done(err); }
+              expect(res.length).to.equal(2);
+              expect(res[0].text).to.equal('injection tests');
+              expect(res[1].text).to.equal(`hopefully this isn't the only message in the table...`);
+              done();
+            });
+          })
+          .catch(err => {
+            done(err);
+          });
+      });
+    });
+  });
 
 });
