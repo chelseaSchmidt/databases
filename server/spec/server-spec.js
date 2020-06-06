@@ -153,4 +153,34 @@ describe('Persistent Node Chat Server', function() {
     });
   });
 
+  it('should not create a new user if user has posted before', function(done) {
+    const sql = `INSERT INTO users (username) VALUES('Mr. Spec')`;
+    const getUsers = 'SELECT * FROM users';
+    dbConnection.query(sql, (err, res) => {
+      if (err) { return done(err); }
+      axios.post('/classes/messages', {
+        username: 'Mr. Spec',
+        text: 'second message',
+        roomname: 'a room'
+      })
+        .then(() => {
+          dbConnection.query(getUsers, (err, res) =>{
+            expect(res.length).to.equal(1);
+            expect(res[0].username).to.equal('Mr. Spec');
+            done();
+          });
+        })
+        .catch(err => {
+          done(err);
+        });
+    });
+  });
+
+  it('should not output any messages after deletion', function(done) {
+    dbConnection.query('SELECT * FROM messages', (err, res) => {
+      expect(res.length).to.equal(0);
+      done();
+    });
+  });
+
 });
