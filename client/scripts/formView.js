@@ -17,8 +17,8 @@ var FormView = {
     };
 
     LocalHost.create(message, (data) => {
-      _.extend(message, data);
-      Messages.add(message, MessagesView.render);
+      App.startSpinner();
+      App.fetch(App.stopSpinner);
     });
       },
 

@@ -20,20 +20,9 @@ module.exports = {
     let text = req.body.text;
     let roomname = req.body.roomname;
 
-    //Escape single quotes===========================
-    let apostrophe = /'/g;
-    if (text.indexOf(`'`) > -1) {
-      text = text.replace(apostrophe, `''`);
-    }
-    if (roomname.indexOf(`'`) > -1) {
-      roomname = roomname.replace(apostrophe, `''`);
-    }
-    if (username.indexOf(`'`) > -1) {
-      username = username.replace(apostrophe, `''`);
-    }
-    //===============================================
-
-    db.mysql.query(`SELECT * FROM users WHERE username='${username}'`, (err, results) => {
+    let sql =`SELECT * FROM users WHERE username=?`;
+    let queryArgs = [username];
+    db.mysql.query(sql, queryArgs, (err, results) => {
       //If error
       if (err) {
         console.log(err, 1);
@@ -47,7 +36,11 @@ module.exports = {
             callback('error creating user');
 
           } else {
-            db.mysql.query(`INSERT INTO messages(username, text, createdAt, roomname, updatedAt) VALUES('${username}', '${text}', (SELECT CURDATE()), '${roomname}', (SELECT CURDATE()))`, (err, results) => {
+
+            let sql2 = `INSERT INTO messages(username, text, createdAt, roomname, updatedAt) VALUES(?, ?, (SELECT CURDATE()), ?, (SELECT CURDATE()))`;
+            let queryArgs2 = [username, text, roomname];
+
+            db.mysql.query(sql2, queryArgs2, (err, results) => {
               if (err) {
                 console.log(err, 3);
                 callback('user created but error adding message');
@@ -60,7 +53,11 @@ module.exports = {
 
       //If user already exists
       } else {
-        db.mysql.query(`INSERT INTO messages(username, text, createdAt, roomname, updatedAt) VALUES('${username}', '${text}', (SELECT CURDATE()), '${roomname}', (SELECT CURDATE()))`, (err, results) => {
+        let sql2 = `INSERT INTO messages(username, text, createdAt, roomname, updatedAt) VALUES(?, ?, (SELECT CURDATE()), ?, (SELECT CURDATE()))`;
+
+        let queryArgs2 = [username, text, roomname];
+
+        db.mysql.query(sql2, queryArgs2, (err, results) => {
           if (err) {
             console.log(err, 4);
             callback('error adding message for existing user');
